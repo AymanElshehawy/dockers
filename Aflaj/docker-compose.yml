@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+    # Laravel Application
+    app:
+        build:
+            context: .  # Path to your Laravel project directory
+            dockerfile: Dockerfile
+        container_name: aflaj-app
+        restart: unless-stopped
+        tty: true
+        environment:
+            SERVICE_NAME: app
+            SERVICE_TAGS: dev
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html/
+        networks:
+            - aflaj-network
+
+    # Nginx Web Server
+    webserver:
+        image: nginx:alpine
+        container_name: aflaj-webserver
+        restart: unless-stopped
+        tty: true
+        volumes:
+            - ./:/var/www/html/
+            - ./DockerFiles/nginx/conf.d/:/etc/nginx/conf.d/
+        ports:
+            - "8011:80"  # Change the host port if needed
+        networks:
+            - aflaj-network
+    # MySQL Database
+    db:
+        image: mysql:8.0
+        container_name: aflaj-db
+        restart: unless-stopped
+        tty: true
+        environment:
+            MYSQL_ROOT_PASSWORD: RM@qaWZsX
+            MYSQL_DATABASE: aflaj_db
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        ports:
+            - "3307:3306"
+        networks:
+            - aflaj-network
+networks:
+    aflaj-network:
+        driver: bridge
